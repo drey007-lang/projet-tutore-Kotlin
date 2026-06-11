@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gestion Présences</string>
+
+    <!-- Accueil -->
+    <string name="accueil_titre">Gestion des\nPrésences</string>
+    <string name="accueil_sous_titre">Choisissez votre profil</string>
+    <string name="role_etudiant">Étudiant</string>
+    <string name="role_etudiant_desc">Marquer ma présence</string>
+    <string name="role_delegue">Délégué</string>
+    <string name="role_delegue_desc">Gérer la liste de classe</string>
+    <string name="role_enseignant">Enseignant</string>
+    <string name="role_enseignant_desc">Valider et consulter</string>
+
+    <!-- Connexion -->
+    <string name="connexion_titre">Entrez votre code d\'accès</string>
+    <string name="connexion_label">Code d\'accès</string>
+    <string name="connexion_bouton">Se connecter</string>
+    <string name="connexion_erreur">Code incorrect. Réessayez.</string>
+
+    <!-- Étudiant -->
+    <string name="etudiant_liste_titre">Liste des étudiants</string>
+    <string name="etudiant_recherche">Rechercher mon nom…</string>
+    <string name="etudiant_present">✓ Présent(e)</string>
+    <string name="etudiant_marquer_present">Appuyer pour marquer présent</string>
+    <string name="etudiant_confirmer">Confirmer ma présence</string>
+    <string name="etudiant_presence_ok">Présence enregistrée !</string>
+    <string name="etudiant_presence_detail">Votre présence a bien été prise en compte.</string>
+
+    <!-- Délégué -->
+    <string name="delegue_tableau_bord">Tableau de bord</string>
+    <string name="delegue_valider">Valider la liste</string>
+    <string name="delegue_validation_ok">Liste validée !</string>
+    <string name="delegue_validation_detail">La fiche de présence a été transmise à l\'enseignant.</string>
+
+    <!-- Enseignant -->
+    <string name="enseignant_choisir_cours">Choisir un cours</string>
+    <string name="enseignant_recapitulatif">Récapitulatif</string>
+    <string name="enseignant_valider_seance">Valider la séance</string>
+    <string name="enseignant_seance_ok">Séance validée !</string>
+    <string name="enseignant_seance_detail">Les présences ont été enregistrées avec succès.</string>
+    <string name="enseignant_historique">Voir historique</string>
+    <string name="enseignant_export_pdf">Exporter PDF</string>
+
+    <!-- Stats -->
+    <string name="stat_presents">Présents</string>
+    <string name="stat_absents">Absents</string>
+    <string name="stat_total">Total</string>
+    <string name="stat_taux">Taux</string>
+    <string name="stat_taux_presence">Taux de présence</string>
+    <string name="stat_detail_etudiant">Détail par étudiant</string>
+
+    <!-- Historique -->
+    <string name="historique_titre">Historique</string>
+    <string name="historique_seances">Séances</string>
+    <string name="historique_par_etudiant">Par étudiant</string>
+    <string name="historique_vide">Aucune séance enregistrée</string>
+
+    <!-- Navigation -->
+    <string name="retour">Retour</string>
+    <string name="retour_accueil">Retour à l\'accueil</string>
+</resources>

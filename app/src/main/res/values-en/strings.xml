@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Attendance Manager</string>
+
+    <!-- Home -->
+    <string name="accueil_titre">Attendance\nManagement</string>
+    <string name="accueil_sous_titre">Choose your profile</string>
+    <string name="role_etudiant">Student</string>
+    <string name="role_etudiant_desc">Mark my attendance</string>
+    <string name="role_delegue">Class Rep</string>
+    <string name="role_delegue_desc">Manage class list</string>
+    <string name="role_enseignant">Teacher</string>
+    <string name="role_enseignant_desc">Validate and review</string>
+
+    <!-- Login -->
+    <string name="connexion_titre">Enter your access code</string>
+    <string name="connexion_label">Access code</string>
+    <string name="connexion_bouton">Log in</string>
+    <string name="connexion_erreur">Incorrect code. Please try again.</string>
+
+    <!-- Student -->
+    <string name="etudiant_liste_titre">Student list</string>
+    <string name="etudiant_recherche">Search my name…</string>
+    <string name="etudiant_present">✓ Present</string>
+    <string name="etudiant_marquer_present">Tap to mark as present</string>
+    <string name="etudiant_confirmer">Confirm attendance</string>
+    <string name="etudiant_presence_ok">Attendance recorded!</string>
+    <string name="etudiant_presence_detail">Your attendance has been successfully recorded.</string>
+
+    <!-- Class Rep -->
+    <string name="delegue_tableau_bord">Dashboard</string>
+    <string name="delegue_valider">Submit list</string>
+    <string name="delegue_validation_ok">List submitted!</string>
+    <string name="delegue_validation_detail">The attendance sheet has been sent to the teacher.</string>
+
+    <!-- Teacher -->
+    <string name="enseignant_choisir_cours">Choose a course</string>
+    <string name="enseignant_recapitulatif">Summary</string>
+    <string name="enseignant_valider_seance">Validate session</string>
+    <string name="enseignant_seance_ok">Session validated!</string>
+    <string name="enseignant_seance_detail">Attendance has been successfully recorded.</string>
+    <string name="enseignant_historique">View history</string>
+    <string name="enseignant_export_pdf">Export PDF</string>
+
+    <!-- Stats -->
+    <string name="stat_presents">Present</string>
+    <string name="stat_absents">Absent</string>
+    <string name="stat_total">Total</string>
+    <string name="stat_taux">Rate</string>
+    <string name="stat_taux_presence">Attendance rate</string>
+    <string name="stat_detail_etudiant">Per student detail</string>
+
+    <!-- History -->
+    <string name="historique_titre">History</string>
+    <string name="historique_seances">Sessions</string>
+    <string name="historique_par_etudiant">By student</string>
+    <string name="historique_vide">No sessions recorded</string>
+
+    <!-- Navigation -->
+    <string name="retour">Back</string>
+    <string name="retour_accueil">Back to home</string>
+</resources>
