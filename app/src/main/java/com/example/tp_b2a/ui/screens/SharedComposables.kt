@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tp_b2a.ui.theme.*
+import kotlinx.coroutines.launch
 
 // ─── Écran de connexion générique (réutilisé par Délégué et Enseignant) ────
 
@@ -31,11 +34,13 @@ fun LoginScreen(
     emoji: String,
     couleur: Color,
     onRetour: () -> Unit,
-    // Retourne true si le code est incorrect
-    onConnexion: (String) -> Boolean
+    onConnexion: suspend (String, String) -> Boolean
 ) {
+    var nom by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var erreur by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -64,7 +69,7 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
             Text(titre, fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Text(
-                "Entrez votre code d'accès",
+                "Identifiez-vous pour continuer",
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.75f),
                 modifier = Modifier.padding(top = 4.dp, bottom = 40.dp)
@@ -81,6 +86,31 @@ fun LoginScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Champ Nom
+                    OutlinedTextField(
+                        value = nom,
+                        onValueChange = {
+                            nom = it
+                            erreur = false
+                        },
+                        label = { Text("Nom ou Prénom") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = couleur)
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        isError = erreur,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = couleur,
+                            focusedLabelColor = couleur
+                        )
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Champ Code/Mot de passe
                     OutlinedTextField(
                         value = code,
                         onValueChange = {
@@ -95,7 +125,7 @@ fun LoginScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                         isError = erreur,
                         supportingText = {
-                            if (erreur) Text("Code incorrect. Réessayez.", color = MaterialTheme.colorScheme.error)
+                            if (erreur) Text("Identifiants incorrects.", color = MaterialTheme.colorScheme.error)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -106,20 +136,29 @@ fun LoginScreen(
                         )
                     )
 
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     Button(
                         onClick = {
-                            erreur = onConnexion(code.trim().uppercase())
+                            scope.launch {
+                                isLoading = true
+                                val success = onConnexion(nom.trim(), code.trim().uppercase())
+                                erreur = !success
+                                isLoading = false
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = couleur),
-                        enabled = code.isNotBlank()
+                        enabled = nom.isNotBlank() && code.isNotBlank() && !isLoading
                     ) {
-                        Text("Se connecter", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        if (isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            Text("Se connecter", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

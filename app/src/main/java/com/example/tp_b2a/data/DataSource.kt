@@ -7,7 +7,9 @@ data class Etudiant(
     val id: Int,
     val nom: String,
     val prenom: String,
-    var estPresent: Boolean = false
+    var estPresent: Boolean = false,
+    var estEnRetard: Boolean = false,
+    var justificatif: String? = null // URL ou chemin vers le justificatif
 )
 
 data class Enseignant(

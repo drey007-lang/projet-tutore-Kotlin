@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,19 +18,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tp_b2a.data.DataSource
 import com.example.tp_b2a.data.Etudiant
+import com.example.tp_b2a.ui.theme.*
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tp_b2a.ui.MainViewModel
+
+import androidx.compose.material.icons.filled.QrCodeScanner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EtudiantScreen(onRetour: () -> Unit) {
+fun EtudiantScreen(onRetour: () -> Unit, onScanClick: () -> Unit, viewModel: MainViewModel = viewModel()) {
 
-    // État local des présences (copie mutable pour recomposition)
-    var etudiants by remember {
-        mutableStateOf(DataSource.etudiants.toList())
+    val dbEtudiants by viewModel.allEtudiants.collectAsState()
+
+    var etudiants by remember(dbEtudiants) {
+        mutableStateOf(dbEtudiants.map {
+            Etudiant(it.id, it.nom, it.prenom, false)
+        })
     }
     var recherche by remember { mutableStateOf("") }
     var confirme by remember { mutableStateOf(false) }
+    var showJustifDialog by remember { mutableStateOf<Pair<Etudiant, Boolean>?>(null) } // Etudiant and isLate flag
 
-    // Filtre par recherche
     val etudiantsFiltres = etudiants.filter {
         it.nom.contains(recherche, ignoreCase = true) ||
                 it.prenom.contains(recherche, ignoreCase = true)
@@ -45,7 +52,7 @@ fun EtudiantScreen(onRetour: () -> Unit) {
                     Column {
                         Text("Liste des étudiants", fontWeight = FontWeight.Bold)
                         Text(
-                            "${etudiants.count { it.estPresent }} présent(s) sur ${etudiants.size}",
+                            "${etudiants.count { it.estPresent || it.estEnRetard }} présent(s) sur ${etudiants.size}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -56,6 +63,11 @@ fun EtudiantScreen(onRetour: () -> Unit) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
                     }
                 },
+                actions = {
+                    IconButton(onClick = onScanClick) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = "Scanner QR", tint = Color.White)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BleuPrimaire,
                     titleContentColor = Color.White,
@@ -64,15 +76,11 @@ fun EtudiantScreen(onRetour: () -> Unit) {
             )
         },
         bottomBar = {
-            // Bouton de confirmation en bas
             if (!confirme) {
                 Surface(shadowElevation = 8.dp) {
                     Button(
                         onClick = {
-                            // Enregistre dans DataSource et confirme
-                            DataSource.etudiants.forEachIndexed { i, e ->
-                                e.estPresent = etudiants[i].estPresent
-                            }
+                            viewModel.saveAttendance(etudiants)
                             confirme = true
                         },
                         modifier = Modifier
@@ -92,31 +100,19 @@ fun EtudiantScreen(onRetour: () -> Unit) {
     ) { padding ->
 
         if (confirme) {
-            // ── Écran de confirmation ──────────────────────────────
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(VertPresent, CircleShape),
+                        modifier = Modifier.size(100.dp).background(VertPresent, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(56.dp)
-                        )
+                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(56.dp))
                     }
                     Spacer(Modifier.height(24.dp))
                     Text("Présence enregistrée !", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = VertPresent)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Votre présence a bien été prise en compte.", color = Color.Gray)
                     Spacer(Modifier.height(32.dp))
                     OutlinedButton(onClick = onRetour) {
                         Text("Retour à l'accueil")
@@ -124,22 +120,15 @@ fun EtudiantScreen(onRetour: () -> Unit) {
                 }
             }
         } else {
-            // ── Liste des étudiants ────────────────────────────────
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(GrisFond)
+                modifier = Modifier.fillMaxSize().padding(padding).background(GrisFond)
             ) {
-                // Barre de recherche
                 OutlinedTextField(
                     value = recherche,
                     onValueChange = { recherche = it },
                     placeholder = { Text("Rechercher mon nom...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -157,12 +146,24 @@ fun EtudiantScreen(onRetour: () -> Unit) {
                     items(etudiantsFiltres, key = { it.id }) { etudiant ->
                         EtudiantItem(
                             etudiant = etudiant,
-                            onToggle = {
-                                // Met à jour la présence dans la liste locale
+                            onTogglePresent = {
                                 etudiants = etudiants.map { e ->
-                                    if (e.id == etudiant.id) e.copy(estPresent = !e.estPresent) else e
+                                    if (e.id == etudiant.id) {
+                                        val newPresent = !e.estPresent
+                                        e.copy(estPresent = newPresent, estEnRetard = if (newPresent) false else e.estEnRetard)
+                                    } else e
                                 }
-                            }
+                            },
+                            onToggleRetard = {
+                                if (!etudiant.estEnRetard) {
+                                    showJustifDialog = Pair(etudiant, true)
+                                } else {
+                                    etudiants = etudiants.map { e ->
+                                        if (e.id == etudiant.id) e.copy(estEnRetard = false) else e
+                                    }
+                                }
+                            },
+                            onJustifClick = { showJustifDialog = Pair(etudiant, false) }
                         )
                     }
                     item { Spacer(Modifier.height(8.dp)) }
@@ -170,66 +171,119 @@ fun EtudiantScreen(onRetour: () -> Unit) {
             }
         }
     }
+
+    if (showJustifDialog != null) {
+        val (etudiant, isLate) = showJustifDialog!!
+        AlertDialog(
+            onDismissRequest = { showJustifDialog = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    etudiants = etudiants.map { e ->
+                        if (e.id == etudiant.id) {
+                            if (isLate) e.copy(estEnRetard = true, estPresent = false, justificatif = "justif_retard")
+                            else e.copy(justificatif = "justif_absence")
+                        } else e
+                    }
+                    showJustifDialog = null
+                }) { Text("Envoyer") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showJustifDialog = null }) { Text("Annuler") }
+            },
+            title = { Text(if (isLate) "Justifier le Retard" else "Justifier l'absence") },
+            text = {
+                Column {
+                    Text("Un justificatif est obligatoire pour marquer un ${if (isLate) "retard" else "absence"}.")
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = { }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Default.FileUpload, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Choisir un fichier")
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun EtudiantItem(etudiant: Etudiant, onToggle: () -> Unit) {
+fun EtudiantItem(etudiant: Etudiant, onTogglePresent: () -> Unit, onToggleRetard: () -> Unit, onJustifClick: () -> Unit) {
     Card(
-        onClick = onToggle,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (etudiant.estPresent) Color(0xFFE8F5E9) else BlancCard
+            containerColor = when {
+                etudiant.estPresent -> Color(0xFFE8F5E9)
+                etudiant.estEnRetard -> Color(0xFFFFF3E0)
+                else -> BlancCard
+            }
         ),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar initiales
             Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(
-                        if (etudiant.estPresent) VertPresent else BleuClair,
-                        CircleShape
-                    ),
+                modifier = Modifier.size(44.dp).background(
+                    when {
+                        etudiant.estPresent -> VertPresent
+                        etudiant.estEnRetard -> OrangeRetard
+                        else -> BleuClair
+                    }, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "${etudiant.prenom.first()}${etudiant.nom.first()}",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp
                 )
             }
 
             Spacer(Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
+                Text(text = "${etudiant.prenom} ${etudiant.nom}", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 Text(
-                    text = "${etudiant.prenom} ${etudiant.nom}",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = if (etudiant.estPresent) "✓ Présent(e)" else "Appuyer pour marquer présent",
-                    fontSize = 13.sp,
-                    color = if (etudiant.estPresent) VertPresent else Color.Gray
+                    text = when {
+                        etudiant.estPresent -> "✓ Présent(e)"
+                        etudiant.estEnRetard -> "⚠ En retard (Justifié)"
+                        etudiant.justificatif != null -> "Justifié"
+                        else -> "Absent"
+                    },
+                    fontSize = 13.sp, color = when {
+                        etudiant.estPresent -> VertPresent
+                        etudiant.estEnRetard -> OrangeRetard
+                        else -> Color.Gray
+                    }
                 )
             }
 
-            // Case à cocher
+            // Bouton Retard
+            if (!etudiant.estPresent) {
+                IconButton(onClick = onToggleRetard) {
+                    Icon(
+                        Icons.Default.Schedule,
+                        contentDescription = "Retard",
+                        tint = if (etudiant.estEnRetard) OrangeRetard else Color.Gray
+                    )
+                }
+            }
+
+            // Bouton Justificatif (pour absence pure)
+            if (!etudiant.estPresent && !etudiant.estEnRetard) {
+                IconButton(onClick = onJustifClick) {
+                    Icon(
+                        Icons.Default.Description,
+                        contentDescription = "Justifier",
+                        tint = if (etudiant.justificatif != null) VertPresent else Color.Gray
+                    )
+                }
+            }
+
             Checkbox(
                 checked = etudiant.estPresent,
-                onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = VertPresent,
-                    uncheckedColor = Color.LightGray
-                )
+                onCheckedChange = { onTogglePresent() },
+                colors = CheckboxDefaults.colors(checkedColor = VertPresent, uncheckedColor = Color.LightGray)
             )
         }
     }
