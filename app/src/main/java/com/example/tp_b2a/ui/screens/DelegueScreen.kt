@@ -47,7 +47,10 @@ fun DelegueScreen(onRetour: () -> Unit, viewModel: MainViewModel = viewModel()) 
         DelegueTableauBord(
             delegue = Delegue(currentUser.entity.id, currentUser.entity.nom, currentUser.entity.prenom, currentUser.entity.code),
             onRetour = onRetour,
-            onValider = { valide = true }
+            onValider = { etudiants ->
+                viewModel.saveAttendance(etudiants)
+                valide = true
+            }
         )
     } else {
         ConfirmationScreen(
@@ -64,7 +67,7 @@ fun DelegueScreen(onRetour: () -> Unit, viewModel: MainViewModel = viewModel()) 
 fun DelegueTableauBord(
     delegue: Delegue,
     onRetour: () -> Unit,
-    onValider: () -> Unit
+    onValider: (List<Etudiant>) -> Unit
 ) {
     var etudiantsLocal by remember { mutableStateOf(DataSource.etudiants.toList()) }
     var showJustifDialog by remember { mutableStateOf<Pair<Etudiant, Boolean>?>(null) }
@@ -98,9 +101,7 @@ fun DelegueTableauBord(
             Surface(shadowElevation = 8.dp) {
                 Button(
                     onClick = {
-                        DataSource.etudiants.clear()
-                        DataSource.etudiants.addAll(etudiantsLocal)
-                        onValider()
+                        onValider(etudiantsLocal)
                     },
                     modifier = Modifier
                         .fillMaxWidth()

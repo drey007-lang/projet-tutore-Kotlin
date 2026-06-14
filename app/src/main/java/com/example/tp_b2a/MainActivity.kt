@@ -11,6 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tp_b2a.ui.screens.*
 import com.example.tp_b2a.ui.theme.TP_B2ATheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tp_b2a.ui.MainViewModel
+import com.example.tp_b2a.data.DataSource
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,6 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TP_B2ATheme {
                 val navController = rememberNavController()
+                val mainViewModel: MainViewModel = viewModel()
                 NavHost(navController = navController, startDestination = "loading") {
                     composable("loading") {
                         LoadingScreen(onFinished = {
@@ -37,23 +41,37 @@ class MainActivity : ComponentActivity() {
                     composable("etudiant") {
                         EtudiantScreen(
                             onRetour = { navController.popBackStack() },
-                            onScanClick = { navController.navigate("scanner") }
+                            onScanClick = { navController.navigate("scanner") },
+                            viewModel = mainViewModel
                         )
                     }
                     composable("scanner") {
                         ScannerScreen(
                             onScanResult = { result ->
-                                // Handle scan result (e.g. mark present)
+                                // Parse student ID from QR code content and mark present
+                                val id = result.toIntOrNull()
+                                if (id != null) {
+                                    val updatedList = DataSource.etudiants.map { e ->
+                                        if (e.id == id) e.copy(estPresent = true) else e
+                                    }
+                                    mainViewModel.saveAttendance(updatedList)
+                                }
                                 navController.popBackStack()
                             },
                             onCancel = { navController.popBackStack() }
                         )
                     }
                     composable("delegue") {
-                        DelegueScreen(onRetour = { navController.popBackStack() })
+                        DelegueScreen(
+                            onRetour = { navController.popBackStack() },
+                            viewModel = mainViewModel
+                        )
                     }
                     composable("enseignant") {
-                        EnseignantScreen(onRetour = { navController.popBackStack() })
+                        EnseignantScreen(
+                            onRetour = { navController.popBackStack() },
+                            viewModel = mainViewModel
+                        )
                     }
                 }
             }

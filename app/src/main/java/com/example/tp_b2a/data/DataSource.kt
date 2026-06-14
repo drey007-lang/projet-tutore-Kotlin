@@ -63,6 +63,10 @@ object DataSource {
 
     // Remet toutes les présences à zéro
     fun resetPresences() {
-        etudiants.forEach { it.estPresent = false }
+        etudiants.forEach { 
+            it.estPresent = false
+            it.estEnRetard = false
+            it.justificatif = null
+        }
     }
 }

@@ -57,7 +57,10 @@ fun EnseignantScreen(onRetour: () -> Unit, viewModel: MainViewModel = viewModel(
                     viewModel.logout()
                     onRetour()
                 },
-                onValider = { valide = true },
+                onValider = {
+                    viewModel.saveAttendance(DataSource.etudiants)
+                    valide = true
+                },
                 viewModel = viewModel
             )
         }
