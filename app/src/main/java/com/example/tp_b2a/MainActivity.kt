@@ -48,13 +48,14 @@ class MainActivity : ComponentActivity() {
                     composable("scanner") {
                         ScannerScreen(
                             onScanResult = { result ->
-                                // Parse student ID from QR code content and mark present
                                 val id = result.toIntOrNull()
                                 if (id != null) {
                                     val updatedList = DataSource.etudiants.map { e ->
                                         if (e.id == id) e.copy(estPresent = true) else e
                                     }
                                     mainViewModel.saveAttendance(updatedList)
+                                } else {
+                                    mainViewModel.activeScanSession = result
                                 }
                                 navController.popBackStack()
                             },

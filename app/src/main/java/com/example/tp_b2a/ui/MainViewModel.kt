@@ -43,6 +43,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var currentUserProfile by mutableStateOf<UserProfile>(UserProfile.Guest)
         private set
 
+    var activeScanSession by mutableStateOf<String?>(null)
+
     init {
         val dao = AppDatabase.getDatabase(application).appDao()
         repository = AppRepository(dao)

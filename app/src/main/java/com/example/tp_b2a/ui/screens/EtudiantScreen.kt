@@ -236,6 +236,70 @@ fun EtudiantScreen(onRetour: () -> Unit, onScanClick: () -> Unit, viewModel: Mai
             }
         )
     }
+
+    if (viewModel.activeScanSession != null) {
+        var selectedStudent by remember { mutableStateOf<Etudiant?>(null) }
+        var dropdownExpanded by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { viewModel.activeScanSession = null },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (selectedStudent != null) {
+                            etudiants = etudiants.map { e ->
+                                if (e.id == selectedStudent!!.id) e.copy(estPresent = true) else e
+                            }
+                            viewModel.saveAttendance(etudiants)
+                            viewModel.activeScanSession = null
+                            confirme = true
+                        }
+                    },
+                    enabled = selectedStudent != null
+                ) {
+                    Text("Valider la présence")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.activeScanSession = null }) {
+                    Text("Annuler")
+                }
+            },
+            title = { Text("Appel en cours 📲") },
+            text = {
+                Column {
+                    Text("Session : ${viewModel.activeScanSession}")
+                    Spacer(Modifier.height(16.dp))
+                    Text("Sélectionnez votre nom pour valider :", fontSize = 14.sp)
+                    Spacer(Modifier.height(8.dp))
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(
+                            onClick = { dropdownExpanded = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(selectedStudent?.let { "${it.prenom} ${it.nom}" } ?: "Choisir mon nom...")
+                        }
+                        DropdownMenu(
+                            expanded = dropdownExpanded,
+                            onDismissRequest = { dropdownExpanded = false },
+                            modifier = Modifier.fillMaxWidth(0.9f).heightIn(max = 250.dp)
+                        ) {
+                            etudiants.sortedBy { it.nom }.forEach { etudiant ->
+                                DropdownMenuItem(
+                                    text = { Text("${etudiant.prenom} ${etudiant.nom}") },
+                                    onClick = {
+                                        selectedStudent = etudiant
+                                        dropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Composable
