@@ -83,6 +83,35 @@ La base de données locale SQL complète est modélisée dans [Entities.kt](file
 
 ---
 
+## 🔑 Identifiants de Test (Credentials)
+
+Pour tester rapidement les différents profils de l'application, voici les comptes de test pré-configurés en base de données :
+
+### 👨‍🏫 Profil Enseignant
+*   **Enseignant 1 (Matière : Développement Mobile) :**
+    *   **Identifiant (Nom) :** `BODJONA` (ou prénom : `Bataka`)
+    *   **Code de connexion / Mot de passe :** `PROF01`
+*   **Enseignant 2 (Matière : Base de Données) :**
+    *   **Identifiant (Nom) :** `KOFFI` (ou prénom : `Ama`)
+    *   **Code de connexion / Mot de passe :** `PROF02`
+*   **Enseignant 3 (Matière : Réseaux) :**
+    *   **Identifiant (Nom) :** `MENSAH` (ou prénom : `Kwame`)
+    *   **Code de connexion / Mot de passe :** `PROF03`
+
+### 📌 Profil Délégué
+*   **Délégué 1 :**
+    *   **Identifiant (Nom) :** `ASANTE` (ou prénom : `Kojo`)
+    *   **Code de connexion / Mot de passe :** `DEL01`
+*   **Délégué 2 :**
+    *   **Identifiant (Nom) :** `OWUSU` (ou prénom : `Akua`)
+    *   **Code de connexion / Mot de passe :** `DEL02`
+
+### 🎓 Profil Étudiant (Scan QR Code)
+*   L'étudiant choisit son nom dans la liste de classe.
+*   **Pour le test de scan QR Code :** Générez un code QR contenant simplement le chiffre correspondant à l'ID de l'étudiant (ex: QR code avec le texte `"1"` pour *Kofi Ama*, `"2"` pour *Mensah Kwame*, etc.) et scannez-le depuis l'application.
+
+---
+
 ## 🚀 Installation & Exécution
 
 ### Prérequis

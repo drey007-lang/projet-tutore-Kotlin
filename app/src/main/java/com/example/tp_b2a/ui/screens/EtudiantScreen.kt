@@ -20,6 +20,8 @@ import com.example.tp_b2a.data.DataSource
 import com.example.tp_b2a.data.Etudiant
 import com.example.tp_b2a.ui.theme.*
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tp_b2a.ui.MainViewModel
 
@@ -39,6 +41,17 @@ fun EtudiantScreen(onRetour: () -> Unit, onScanClick: () -> Unit, viewModel: Mai
     var recherche by remember { mutableStateOf("") }
     var confirme by remember { mutableStateOf(false) }
     var showJustifDialog by remember { mutableStateOf<Pair<Etudiant, Boolean>?>(null) } // Etudiant and isLate flag
+
+    var selectedFileName by remember { mutableStateOf<String?>(null) }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            if (uri != null) {
+                selectedFileName = uri.lastPathSegment ?: "justificatif.pdf"
+            }
+        }
+    )
 
     val etudiantsFiltres = etudiants.filter {
         it.nom.contains(recherche, ignoreCase = true) ||
@@ -175,30 +188,49 @@ fun EtudiantScreen(onRetour: () -> Unit, onScanClick: () -> Unit, viewModel: Mai
     if (showJustifDialog != null) {
         val (etudiant, isLate) = showJustifDialog!!
         AlertDialog(
-            onDismissRequest = { showJustifDialog = null },
+            onDismissRequest = { 
+                showJustifDialog = null
+                selectedFileName = null
+            },
             confirmButton = {
                 TextButton(onClick = {
                     etudiants = etudiants.map { e ->
                         if (e.id == etudiant.id) {
-                            if (isLate) e.copy(estEnRetard = true, estPresent = false, justificatif = "justif_retard")
-                            else e.copy(justificatif = "justif_absence")
+                            if (isLate) e.copy(estEnRetard = true, estPresent = false, justificatif = selectedFileName ?: "justif_retard")
+                            else e.copy(justificatif = selectedFileName ?: "justif_absence")
                         } else e
                     }
                     showJustifDialog = null
+                    selectedFileName = null
                 }) { Text("Envoyer") }
             },
             dismissButton = {
-                TextButton(onClick = { showJustifDialog = null }) { Text("Annuler") }
+                TextButton(onClick = { 
+                    showJustifDialog = null
+                    selectedFileName = null
+                }) { Text("Annuler") }
             },
             title = { Text(if (isLate) "Justifier le Retard" else "Justifier l'absence") },
             text = {
                 Column {
                     Text("Un justificatif est obligatoire pour marquer un ${if (isLate) "retard" else "absence"}.")
                     Spacer(Modifier.height(16.dp))
-                    Button(onClick = { }, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = { filePickerLauncher.launch("*/*") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Icon(Icons.Default.FileUpload, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Choisir un fichier")
+                        Text(if (selectedFileName == null) "Choisir un fichier" else "Changer de fichier")
+                    }
+                    if (selectedFileName != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Fichier : $selectedFileName",
+                            fontSize = 12.sp,
+                            color = VertPresent,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
