@@ -128,3 +128,8 @@ Pour tester rapidement les différents profils de l'application, voici les compt
 3.  Laissez Gradle synchroniser le projet.
 4.  Démarrez un émulateur ou branchez un appareil physique Android.
 5.  Cliquez sur le bouton **Run** (`app`).
+
+---
+
+*Dernière mise à jour effectuée.*
+
